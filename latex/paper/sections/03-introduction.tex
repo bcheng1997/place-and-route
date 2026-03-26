@@ -7,14 +7,14 @@ Inefficient placement strategy not only extends design times from hours to days,
 
 For these reasons, FPGA placement remains a critical research effort even today. 
 In this paper, we study and implement established placement methods. 
-To do this, we use the RapidWright API, which is a semi-open-source research effort from AMD/Xilinx that enables custom solutions to FPGA design implementations and design tools that are not offered by their industry-standard FPGA environment, Vivado. 
-We implement multiple variations of simulated annealing placers for Xilinx's 7-series FPGAs, with an emphasis on minimizing total wirelength while mitigating runtime. 
+To do this, we use the RapidWright API, which is a semi-open-source research effort from AMD Research and Advanced Development (previously Xilinx Research Labs) that enables custom solutions to FPGA design implementations and design tools that are not offered by their industry-standard FPGA environment, Vivado. 
+We implement multiple variations of simulated annealing placers for Xilinx's 7-series FPGAs, with an emphasis on minimizing total wirelength and reducing runtime. 
 Our implementation is organized into three consecutive substages. 
 The \textbf{prepacking} stage involves traversing a raw EDIF netlist to identify recurring cell patterns—such as CARRY chains, DSP cascades, and LUT-FF pairs—that are critical for efficient mapping and legalization. 
 In the subsequent \textbf{packing} stage, these identified patterns, along with any remaining loose cells, are consolidated into \texttt{SiteInst} objects that encapsulate the FPGA’s discrete resource constraints and architectural nuances. 
 Finally, the \textbf{placement} stage employs a simulated annealing (SA) algorithm to optimally assign \texttt{SiteInst} objects to physical \texttt{Sites}, aiming to minimize total wirelength while the constraints of the 7-series architecture. 
 
-Simulated annealing iteratively swaps placement objects guided by a cost function that decides which swaps should be accepted or rejected. 
+The SA algorithm iteratively swaps placement objects guided by a cost function that decides which swaps should be accepted or rejected. 
 Hill climbing is permitted by occasionally accepting moves that increase cost, in hope that such swaps may later lead to a better final solution. 
 SA remains a popular approach in FPGA placement research due to its simplicity and robustness in handling the discrete architectural constraints of FPGA devices. 
 While SA yields surprisingly good results given relatively simple rules, it is ultimately a heuristic approach that explores the vast placement space by making random moves. 
@@ -22,7 +22,7 @@ Most of these moves will be rejected, meaning that SA must run many iterations, 
 
 In the ASIC domain, where placers must handle designs with millions of cells, the SA approach has largely been abandoned in favor of analytical techniques, owing to SA's runtime and poor scalability. 
 Modern FPGA placers have also followed suit, as new legalization strategies allow FPGA placers to leverage traditionally ASIC placement algorithms and adapt them to the discrete constraints of FPGA architectures. 
-While this paper does not present a working analytical placer, it will explore ways to build upon our existing infrastructure (prepacker and packer) to replace SA with AP. 
+While this paper does not present a working analytical placer, it will explore ways to build upon our existing infrastructure (prepacker and packer) to replace SA with analytical placement (AP). 
 
 The paper first begins by elaborating on general FPGA architecture and then specifically the Xilinx 7-Series architecture. 
 Then, the paper will elaborate on the FPGA design flow, then the role that the RapidWright API plays in the design flow. 
