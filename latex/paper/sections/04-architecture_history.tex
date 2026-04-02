@@ -7,7 +7,7 @@ We will briefly review the evolution of configurable logic architecture starting
 The journey began with the Programmable Logic Array (PLA) in the early 1970s. 
 The PLA implemented output logic using a programmable-OR and programmable-AND plane that formed a sum-of-products (SOP) equation for each output through programmable fuses. 
 This architecture allows the implementation of arbitrary combinational logic, provided sufficient product terms and crosspoints in the SOP fabric.
-This allowed for the emulation/implementation of any combinational logic system, provided there were enough crosspoints in the SOP fabric.
+% This allowed for the emulation/implementation of any combinational logic system, provided there were enough crosspoints in the SOP fabric.
 Around the same time, the Programmable Array Logic (PAL) was introduced. 
 The PAL simplified the PLA by fixing the OR gates, resulting in a fixed-OR, programmable-AND design, which sacrificed some logic flexibility to simplify its manufacture. 
 Figure \ref{fig:pal_2} shows one such PAL architecture. 
@@ -69,8 +69,6 @@ The capacity of an FPGA was often measured by how many logical elements or CLBs 
 }
 \vspace{0.25cm}
 
-\textbf{Heterogenous FPGA:} \quad 
-This brings us to modern day FPGA architectures. 
 To meet the needs of increasingly complex designs, FPGA vendors introduced heterogeneous FPGAs. 
 In these devices, hard macros such as Block RAM (BRAM) and Digital Signal Processing (DSP) slices are integrated into the programmable logic fabric along with CLBs, like shown in Figure \ref{fig:heterogen_fpga}. 
 This design enables the direct instantiation of common subsystems like memories and multipliers, without having to recreate them from scratch using CLBs. 
