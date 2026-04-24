@@ -1,24 +1,31 @@
 #!/bin/bash
 
+# ==========================================================================
+# Update PROJ_DIR, DESIGN, TOP_LEVEL, XILINX_VIVADO, and RAPIDWRIGHT_PATH to
+# reflect your environment.
+
+# This repository's directory.
+PROJ_DIR="/home/bcheng/workspace/dev/place-and-route"
+
+# Name of your Verilog project.
 DESIGN="fir_filter"
+
+# Name of the top level module of your Verilog project.
 TOP_LEVEL="top_level"
 
+# Directories of your Vivado 2025.1.1 and RapidWright installations.
 export XILINX_VIVADO=/home/bcheng/workspace/tools/Xilinx/2025.1.1/Vivado
-export PATH="$PATH:$XILINX_VIVADO/bin"
-
-export JAVA_HOME=/home/bcheng/workspace/tools/Xilinx/2025.1.1/Vivado/tps/lnx64/jre21.0.1_12
-export PATH="$JAVA_HOME/bin:$PATH"
-
 export RAPIDWRIGHT_PATH=/home/bcheng/workspace/tools/RapidWright
+
+# (end of user's variables)
+# ==========================================================================
+
+export PATH="$PATH:$XILINX_VIVADO/bin"
+export JAVA_HOME=$XILINX_VIVADO/tps/lnx64/jre21.0.1_12
+export PATH="$JAVA_HOME/bin:$PATH"
 export PATH="$PATH:$RAPIDWRIGHT_PATH/bin"
 export CLASSPATH=$RAPIDWRIGHT_PATH/bin:$RAPIDWRIGHT_PATH/jars/*
 export _JAVA_OPTIONS=-Xmx32736m
-
-# EJML
-export EJML_PATH=/home/bcheng/workspace/tools/ejml-v0.42-libs
-export CLASSPATH=$CLASSPATH:$EJML_PATH/*
-
-PROJ_DIR="/home/bcheng/workspace/dev/place-and-route"
 
 SYNTH_TCL="$PROJ_DIR/tcl/synth.tcl"
 RTL_TCL="$PROJ_DIR/tcl/rtl.tcl"
@@ -45,6 +52,7 @@ while IFS= read -r line; do
 done <"$TOP_PARAMS_FILE"
 
 start_stage=${1:-all} # Use first argument or defaults to all
+num_args=$#           # Number of arguments into script
 
 check_exit_status() {
     if [ $? -ne 0 ]; then
@@ -53,15 +61,22 @@ check_exit_status() {
     fi
 }
 
+if [ "$start_stage" == "python" ] || [ "$start_stage" == "all" ]; then
+    DIR="$DESIGN_DIR/python"
+
+    for f in "$DIR"/*.py; do
+        [[ -e "$f" ]] || {
+            echo "No Python files in $DIR"
+            break
+        }
+        echo "Running $f"
+        python3 "$f"
+    done
+fi
+
 # Vivado Synthesis Stage
 if [ "$start_stage" == "synth" ] || [ "$start_stage" == "all" ]; then
     echo "Running Vivado synthesis..."
-    cd "$DESIGN_DIR/src"
-    rm weights*
-    cd "$DESIGN_DIR/python"
-    python3 sine.py
-    python3 weights.py
-    cd $PROJ_DIR
     vivado -mode batch -source $SYNTH_TCL -nolog -nojournal -tclargs $DESIGN $SYNTH_TOP_PARAMS
     check_exit_status "Vivado synthesis"
     echo "Vivado synthesis completed. Check 'synthesized.dcp'."
@@ -71,10 +86,6 @@ fi
 if [ "$start_stage" == "rtl" ]; then
     echo "Running Vivado RTL synthesis..."
     cd "$DESIGN_DIR/src"
-    rm weights*
-    cd "$DESIGN_DIR/python"
-    python3 sine.py
-    python3 weights.py
     cd $PROJ_DIR
     vivado -mode batch -source $RTL_TCL -nolog -nojournal -tclargs $DESIGN $SYNTH_TOP_PARAMS
     check_exit_status "Vivado RTL"
@@ -84,12 +95,6 @@ fi
 # Functional Simulation
 if [ "$start_stage" == "sim_functional" ]; then
     echo "Running Functional Simulation..."
-    # generate sine.mem and weights.mem
-    cd "$DESIGN_DIR/src"
-    rm weights*
-    cd "$DESIGN_DIR/python"
-    python3 sine.py
-    python3 weights.py
 
     cd "$DESIGN_DIR/sim_functional"
     cat <<EOL >xsim_cfg.tcl
@@ -144,7 +149,7 @@ EOL
     # xsim "${TOP_LEVEL}_functional".wdb -gui -tclbatch waveform.tcl
 fi
 
-# Gradle Build Stage (replaces Java Compilation)
+# Gradle Build Stage (Java Compilation)
 if [ "$start_stage" == "compile" ] || [ "$start_stage" == "all" ]; then
     echo "Building Java project with Gradle..."
     rm -rf "$PROJ_DIR/outputs/placers/*"
@@ -154,7 +159,7 @@ if [ "$start_stage" == "compile" ] || [ "$start_stage" == "all" ]; then
     echo "Gradle build completed."
 fi
 
-# Gradle Run Stage (replaces Java Placement)
+# Java Placement Stage
 if [ "$start_stage" == "place" ] || [ "$start_stage" == "all" ]; then
     rm $PROJ_DIR/outputs/placers/* -r
     echo "Running Java placement with Gradle..."
@@ -237,12 +242,6 @@ if [ "$start_stage" == "sim_postroute" ] || [ "$start_stage" == "all" ]; then
     echo "Running Post-Implementation Timing Simulation..."
     vivado -mode batch -source $SIM_TCL -nolog -nojournal -tclargs $DESIGN $TOP_LEVEL
     check_exit_status "Vivado sim"
-
-    cd "$DESIGN_DIR/src"
-    rm weights*
-    cd "$DESIGN_DIR/python"
-    python3 sine.py
-    python3 weights.py
 
     cd "$DESIGN_DIR/sim_postroute"
 
