@@ -89,6 +89,34 @@ export RAPIDWRIGHT_PATH=/home/bcheng/workspace/tools/RapidWright
     * `../your_proj/sim_postroute/`  
     * (Optional) `../your_proj/python/`  
 
+- And a text file named:
+    * `../your_proj/parameters_top_level.txt`
+    * This file will contain any parameters you wish to pass into your Verilog top-level module.
+    * This file exists just to make sure the same parameters get passed into synthesis and simulation.
+    * Can be left blank.
+    * Parameters in this file should be formatted like the following:
+
+For a Verilog top-level module:
+`top_level.v`
+```
+module top_level
+#(
+    parameter DATA_WIDTH = 24,
+    parameter FIR_DEPTH = 2048,
+    parameter NUM_PIPELINES = 32
+)(
+    input wire i_clk,
+    ...
+);
+```
+
+Corresponding `parameters_top_level.txt`
+```
+DATA_WIDTH=24
+FIR_DEPTH=2048
+NUM_PIPELINES=32
+```
+
 - Put your Verilog source (.v files) in `/your_proj/src/`
 - Put your SystemVerilog testbench (.sv files) in `/your_proj/verif/`
 - Put your constraints file (.xdc file) in `/your_proj/constrs/`
@@ -110,8 +138,9 @@ fir_filter
 │   ├── fir_tap.v
 │   ├── fir_filter.v
 │   └── top_level.v
-└── verif
-    └── tb_top_level.sv
+├── verif
+│   └── tb_top_level.sv
+└── parameters_top_level.txt
 ```
 
 - Using the script commands (each command assumes all of the previous commands have already run once, in this order):  

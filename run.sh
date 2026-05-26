@@ -34,7 +34,7 @@ ROUTE_TCL="$ROOT_DIR/tcl/route.tcl"
 SIM_TCL="$ROOT_DIR/tcl/sim.tcl"
 
 DESIGN_DIR="$ROOT_DIR/hdl/verilog/${DESIGN}"
-TOP_PARAMS_FILE="$DESIGN_DIR/parameters_${TOP_LEVEL}.txt"
+TOP_PARAMS_FILE="$DESIGN_DIR/parameters_top_level.txt"
 XELAB_TOP_PARAMS=""
 SYNTH_TOP_PARAMS=""
 
