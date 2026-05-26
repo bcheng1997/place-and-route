@@ -1,11 +1,17 @@
 # route.tcl
 
-set root_dir "/home/bcheng/workspace/dev/place-and-route"
-set placed_dcp "$root_dir/outputs/placers/PlacerAnnealHybrid/checkpoints/PlacerAnnealHybrid.dcp"
+# set root_dir "/home/bcheng/workspace/dev/place-and-route"
+
+set root_dir [lindex $argv 0]
+# You may have to change placed_dcp depending on the placer you choose to run in java Main
+# Example: 
+# set placed_dcp "$root_dir/outputs/placers/PlacerAnnealHybrid_10000_98/checkpoints/PlacerAnnealHybrid.dcp"
+set placed_dcp "$root_dir/outputs/placers/PlacerAnnealRandom/checkpoints/PlacerAnnealRandom.dcp"
 set packed_dcp "$root_dir/outputs/checkpoints/packed.dcp"
 set routed_dcp "$root_dir/outputs/checkpoints/routed.dcp"
 set bitstream_file "$root_dir/outputs/output.bit"
 
+puts "route.tcl: Opening placed .dcp file: $placed_dcp"
 open_checkpoint $placed_dcp
 report_utilization
 

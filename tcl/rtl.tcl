@@ -1,9 +1,11 @@
 # set design "fir_filter"
 
-set design [lindex $argv 0]
-set top_params [join [lrange $argv 1 end] " "]
+# set root_dir "/home/bcheng/workspace/dev/place-and-route"
 
-set root_dir "/home/bcheng/workspace/dev/place-and-route"
+set root_dir [lindex $argv 0]
+set design [lindex $argv 1]
+set top_params [join [lrange $argv 2 end] " "]
+
 set rtl_synth "$root_dir/outputs/checkpoints/rtl_synth.dcp" 
 
 # set design "counter"

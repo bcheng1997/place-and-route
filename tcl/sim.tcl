@@ -1,10 +1,11 @@
 # set design "fir_filter"
 # set top_level "top_level"
+# set root_dir "/home/bcheng/workspace/dev/place-and-route"
 
-set design [lindex $argv 0]
-set top_level [lindex $argv 1]
+set root_dir [lindex $argv 0]
+set design [lindex $argv 1]
+set top_level [lindex $argv 2]
 
-set root_dir "/home/bcheng/workspace/dev/place-and-route"
 set dcp_file "$root_dir/outputs/checkpoints/routed.dcp" 
 
 open_checkpoint $dcp_file

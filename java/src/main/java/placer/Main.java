@@ -34,25 +34,22 @@ import com.xilinx.rapidwright.design.DesignTools;
 public class Main {
 
     private static final Logger logger = Logger.getLogger(Main.class.getName());
-    protected static final String rootDir = "/home/bcheng/workspace/dev/place-and-route";
-    protected static final String synthesizedDcp = rootDir + "/outputs/checkpoints/synthesized.dcp";
+    protected static String rootDir;
+    protected static String synthesizedDcp;
+    // protected static final String rootDir = "/home/bcheng/workspace/dev/place-and-route";
+    // protected static final String synthesizedDcp = rootDir + "/outputs/checkpoints/synthesized.dcp";
 
     public static void main(String[] args) {
         try {
+            rootDir = args[0]; // the repository directory
+            synthesizedDcp = rootDir + "/outputs/checkpoints/synthesized.dcp";
+            System.out.println("Synthesized .dcp file location: " + synthesizedDcp);
+
             FileHandler fileHandler = new FileHandler(rootDir + "/outputs/logger.log", true); // 'true' appends to file
             fileHandler.setFormatter(new SimpleFormatter());
             logger.addHandler(fileHandler);
             logger.setLevel(Level.ALL); // Set logging level to record all messages
             logger.log(Level.INFO, "Begin Placer...");
-
-            // Design vivado_design = Design.readCheckpoint(rootDir +
-            // "/outputs/checkpoints/vivado_routed.dcp");
-            // drawPlacement(vivado_design, rootDir + "/outputs/placers/vivado_routed.png");
-
-            // Design rapidwright_design = Design
-            // .readCheckpoint(rootDir + "/outputs/checkpoints/routed.dcp");
-            // drawPlacement(rapidwright_design, rootDir +
-            // "/outputs/placers/rapidwright_routed.png");
 
             Design design = Design.readCheckpoint(synthesizedDcp);
             Device device = Device.getDevice("xc7z020clg400-1");
@@ -80,23 +77,32 @@ public class Main {
             // takes the packedDesign and figures out an optimal mapping of SiteInsts onto
             // Sites via simulated annealing, analytical, electrostatic placement, etc.
             // works entirely on the SiteInst/Site/Tile level.
-            // List<PlacerAnnealRandom> SAPlacers = new ArrayList<PlacerAnnealRandom>();
-            // SAPlacers.add(new PlacerAnnealRandom(rootDir, design, device, region));
-            // SAPlacers.add(new PlacerAnnealMidpoint(rootDir, design, device, region));
+            List<PlacerAnnealRandom> SAPlacers = new ArrayList<PlacerAnnealRandom>();
+            SAPlacers.add(new PlacerAnnealRandom(rootDir, design, device, region));
             // SAPlacers.add(new PlacerAnnealHybrid(rootDir, design, device, region));
             // SAPlacers.add(new PlacerGreedyRandom(rootDir, design, device, region));
+            // SAPlacers.add(new PlacerAnnealMidpoint(rootDir, design, device, region));
             // SAPlacers.add(new PlacerGreedyMidpoint(rootDir, design, device, region));
-
-            // for (PlacerAnnealRandom placer : SAPlacers) {
-            // System.out.println("\n\nStarting " + placer.getPlacerName() + "... \n\n");
-            // placer.makeOutputDirs(placer.getPlacerName());
-            // placer.initCoolingSchedule(10000.0d, 0.98d, 300);
-            // placer.run(packedDesign);
-            // }
 
             List<String> placerNames = new ArrayList<>();
             List<List<Double>> combinedCostHistory = new ArrayList<>();
 
+            // Batch run across placers with same cooling schedule
+            for (PlacerAnnealRandom placer : SAPlacers) {
+                String name = placer.getPlacerName();
+                System.out.println("\n\nStarting " + name + "... \n\n");
+                placerNames.add(name);
+                placer.makeOutputDirs(name);
+                placer.initCoolingSchedule(10000.0d, 0.98d, 300);
+                placer.run(packedDesign);
+                combinedCostHistory.add(placer.getCostHistory());
+            }
+
+            writeCostHistoryCSV(placerNames, combinedCostHistory, rootDir + "/outputs/combined_cost_history.csv");
+
+            /*
+            // Batch run across different cooling schedules and across placers.
+            // This will take a long time (about 5-10 minutes).
             List<PlacerAnnealRandom> PARPlacers = new ArrayList<PlacerAnnealRandom>();
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 5; j++) {
@@ -117,7 +123,6 @@ public class Main {
                     combinedCostHistory.add(placer.getCostHistory());
                 }
             }
-
             List<PlacerAnnealHybrid> PAHPlacers = new ArrayList<PlacerAnnealHybrid>();
             for (int i = 0; i < 2; i++) {
                 for (int j = 0; j < 5; j++) {
@@ -138,8 +143,9 @@ public class Main {
                     combinedCostHistory.add(placer.getCostHistory());
                 }
             }
-
             writeCostHistoryCSV(placerNames, combinedCostHistory, rootDir + "/outputs/combined_cost_history.csv");
+            */
+
 
         } catch (IOException e) {
             logger.log(Level.SEVERE, "An IOException occurred while configuring the logger.", e);

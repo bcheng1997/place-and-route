@@ -172,7 +172,10 @@ public abstract class Placer {
         int attempts = 0;
         while (true) {
             if (attempts > 1000)
-                throw new IllegalStateException("ERROR: Could not propose " + ste + " site after 1000 attempts!");
+                throw new IllegalStateException(
+                    "ERROR: Could not propose " + ste + " site after 1000 attempts! " +
+                    "The design may be too large for this device!"
+                );
             int randIndex = rand.nextInt(allSites.get(ste).size());
             selectedSite = allSites.get(ste).get(randIndex);
             if (occupiedSiteChains.containsKey(ste)) { // never propose site swap with a chain

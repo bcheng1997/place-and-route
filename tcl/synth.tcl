@@ -1,9 +1,10 @@
 # set design "fir_filter"
 
-set design [lindex $argv 0]
-set top_params [join [lrange $argv 1 end] " "]
+set root_dir [lindex $argv 0]
+set design [lindex $argv 1]
+set top_params [join [lrange $argv 2 end] " "]
 
-set root_dir "/home/bcheng/workspace/dev/place-and-route"
+# set root_dir "/home/bcheng/workspace/dev/place-and-route"
 set synthesized_dcp "$root_dir/outputs/checkpoints/synthesized.dcp" 
 
 # set design "counter"
@@ -31,8 +32,7 @@ foreach file $src_files {
 set xdc_file $xdc_dir/constraints.xdc
 read_xdc $xdc_file
 
-set top_params [join [lrange $argv 1 end] " "]
-puts "synth.tcl: Received parameters: $top_params"
+puts "synth.tcl: Received HDL top level parameters: $top_params"
 
 # set cmd "synth_design -mode out_of_context -part xc7z020clg400-1 -fsm_extraction user_encoding -top top_level $top_params"
 set cmd "synth_design -mode out_of_context -part xc7z020clg400-1 -top top_level $top_params"

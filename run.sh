@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # ==========================================================================
-# Update PROJ_DIR, DESIGN, TOP_LEVEL, XILINX_VIVADO, and RAPIDWRIGHT_PATH to
+# Update ROOT_DIR, DESIGN, TOP_LEVEL, XILINX_VIVADO, and RAPIDWRIGHT_PATH to
 # reflect your environment.
 
 # This repository's directory.
-PROJ_DIR="/home/bcheng/workspace/dev/place-and-route"
+ROOT_DIR="/home/bcheng/workspace/dev/place-and-route"
 
 # Name of your Verilog project.
 DESIGN="fir_filter"
@@ -27,13 +27,13 @@ export PATH="$PATH:$RAPIDWRIGHT_PATH/bin"
 export CLASSPATH=$RAPIDWRIGHT_PATH/bin:$RAPIDWRIGHT_PATH/jars/*
 export _JAVA_OPTIONS=-Xmx32736m
 
-SYNTH_TCL="$PROJ_DIR/tcl/synth.tcl"
-RTL_TCL="$PROJ_DIR/tcl/rtl.tcl"
-PLACE_TCL="$PROJ_DIR/tcl/place.tcl"
-ROUTE_TCL="$PROJ_DIR/tcl/route.tcl"
-SIM_TCL="$PROJ_DIR/tcl/sim.tcl"
+SYNTH_TCL="$ROOT_DIR/tcl/synth.tcl"
+RTL_TCL="$ROOT_DIR/tcl/rtl.tcl"
+PLACE_TCL="$ROOT_DIR/tcl/place.tcl"
+ROUTE_TCL="$ROOT_DIR/tcl/route.tcl"
+SIM_TCL="$ROOT_DIR/tcl/sim.tcl"
 
-DESIGN_DIR="$PROJ_DIR/hdl/verilog/${DESIGN}"
+DESIGN_DIR="$ROOT_DIR/hdl/verilog/${DESIGN}"
 TOP_PARAMS_FILE="$DESIGN_DIR/parameters_${TOP_LEVEL}.txt"
 XELAB_TOP_PARAMS=""
 SYNTH_TOP_PARAMS=""
@@ -77,7 +77,7 @@ fi
 # Vivado Synthesis Stage
 if [ "$start_stage" == "synth" ] || [ "$start_stage" == "all" ]; then
     echo "Running Vivado synthesis..."
-    vivado -mode batch -source $SYNTH_TCL -nolog -nojournal -tclargs $DESIGN $SYNTH_TOP_PARAMS
+    vivado -mode batch -source $SYNTH_TCL -nolog -nojournal -tclargs $ROOT_DIR $DESIGN $SYNTH_TOP_PARAMS
     check_exit_status "Vivado synthesis"
     echo "Vivado synthesis completed. Check 'synthesized.dcp'."
 fi
@@ -86,8 +86,8 @@ fi
 if [ "$start_stage" == "rtl" ]; then
     echo "Running Vivado RTL synthesis..."
     cd "$DESIGN_DIR/src"
-    cd $PROJ_DIR
-    vivado -mode batch -source $RTL_TCL -nolog -nojournal -tclargs $DESIGN $SYNTH_TOP_PARAMS
+    cd $ROOT_DIR
+    vivado -mode batch -source $RTL_TCL -nolog -nojournal -tclargs $ROOT_DIR $DESIGN $SYNTH_TOP_PARAMS
     check_exit_status "Vivado RTL"
     echo "Vivado synthesis completed. Starting GUI."
 fi
@@ -152,8 +152,8 @@ fi
 # Gradle Build Stage (Java Compilation)
 if [ "$start_stage" == "compile" ] || [ "$start_stage" == "all" ]; then
     echo "Building Java project with Gradle..."
-    rm -rf "$PROJ_DIR/outputs/placers/*"
-    cd $PROJ_DIR/java
+    rm -rf "$ROOT_DIR/outputs/placers/*"
+    cd $ROOT_DIR/java
     gradle build
     check_exit_status "Gradle build"
     echo "Gradle build completed."
@@ -161,21 +161,21 @@ fi
 
 # Java Placement Stage
 if [ "$start_stage" == "place" ] || [ "$start_stage" == "all" ]; then
-    rm $PROJ_DIR/outputs/placers/* -r
+    rm $ROOT_DIR/outputs/placers/* -r
     echo "Running Java placement with Gradle..."
-    cd $PROJ_DIR/java
-    gradle run
+    cd $ROOT_DIR/java
+    gradle run --args="$ROOT_DIR"
     check_exit_status "Gradle run"
-    cd $PROJ_DIR
+    cd $ROOT_DIR
     echo "Java placement executed. Check 'logger.txt' for output."
 fi
 
 # Return to outer dir
-cd $PROJ_DIR
+cd $ROOT_DIR
 
 # Render placement graphics
 if [ "$start_stage" == "graphics" ] || [ "$start_stage" == "all" ]; then
-    cd $PROJ_DIR
+    cd $ROOT_DIR
     FPS=10
     # INPUT="outputs/placers/PlacerAnnealRandom/graphics/images"
     PLACERS_DIR="outputs/placers"
@@ -223,12 +223,12 @@ if [ "$start_stage" == "graphics" ] || [ "$start_stage" == "all" ]; then
     # https://stackoverflow.com/questions/20847674/ffmpeg-libx264-height-not-divisible-by-2
 fi
 
-cd $PROJ_DIR
+cd $ROOT_DIR
 
 # Vivado Route Stage
 if [ "$start_stage" == "route" ] || [ "$start_stage" == "all" ]; then
     echo "Running Vivado route..."
-    vivado -mode batch -source $ROUTE_TCL -nolog -nojournal
+    vivado -mode batch -source $ROUTE_TCL -nolog -nojournal -tclargs $ROOT_DIR
     check_exit_status "Vivado route"
     echo "Vivado route completed. Check 'routed.dcp'."
 fi
@@ -237,10 +237,10 @@ fi
 if [ "$start_stage" == "sim_postroute" ] || [ "$start_stage" == "all" ]; then
     # cd "$DESIGN_DIR/sim_postroute"
     # rm -r *
-    # cd $PROJ_DIR
+    # cd $ROOT_DIR
 
     echo "Running Post-Implementation Timing Simulation..."
-    vivado -mode batch -source $SIM_TCL -nolog -nojournal -tclargs $DESIGN $TOP_LEVEL
+    vivado -mode batch -source $SIM_TCL -nolog -nojournal -tclargs $ROOT_DIR $DESIGN $TOP_LEVEL
     check_exit_status "Vivado sim"
 
     cd "$DESIGN_DIR/sim_postroute"
@@ -309,7 +309,7 @@ EOL
 fi
 
 # Return to outer dir
-cd $PROJ_DIR
+cd $ROOT_DIR
 
 # xvlog --incr --relax -L uvm -prj tb_counter_vlog.prj
 # xsim tb_counter_time_impl -key {Post-Implementation:sim_1:Timing:tb_counter} -tclbatch tb_counter.tcl -log simulate.log
